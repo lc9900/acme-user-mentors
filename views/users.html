@@ -1,0 +1,107 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<ul id='tabs' class="nav nav-tabs" role="tablist">
+    <li><a href="/">Home</a></li>
+    <li class="active"><a href="/users">Users</a></li>
+</ul>
+
+<div id="tabContent" class="tab-content">
+    <div class="well">
+        <form method='POST' action='/users'>
+            <div class='form-group'>
+              <input name='name' placeholder='user name' class='form-control'/>
+            </div>
+            <div class='form-group'>
+              <button class='btn btn-primary'>Save</button>
+            </div>
+        </form>
+    </div>
+
+
+<!--    viewModel.users: containing an array of all users and related info, including mentor, and award
+        viewModel.mentors: an array of users that has at least two awards -->
+
+    <div class="row">
+        {% for user in users%}
+            <div class="col-sm-3">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        {{user.name}}
+                        <form method="POST" action="/users/{{user.id}}?_method=DELETE">
+                            <button class="btn btn-danger btn-xs">Delete</button>
+                        </form>
+                    </div> <!-- End of panel-heading -->
+
+                    <div class="panel-body">
+                        <form method="post" action="/users/{{user.id}}/awards">
+                            <button class="btn btn-primary btn-xs">Create an award</button>
+                        </form>
+                        <ul>
+                            {% for award in user.awards %}
+                                <li>
+                                    {{award.name}}
+                                    <form method="POST" action="/users/{{user.id}}/awards/{{award.id}}?_method=DELETE">
+                                        <button class="btn btn-warning btn-xs">Delete award</button>
+                                    </form>
+                                </li>
+                            {% endfor %}
+                        </ul>
+
+                        {% if user.mentor %}
+
+                            <div class="label label-default">
+                                Mentored by: {{user.mentor.name}}
+                            </div>
+                            <p></p>
+                            <form method="POST" action="/users/{{user.id}}?_method=PUT">
+                                <input type="hidden" name="mentorId" value="">
+                                <button class="btn btn-warning">Remove Mentor</button>
+                            </form>
+
+                        {% else %}
+
+                            <form method="POST" action="/users/{{user.id}}?_method=PUT" class="well">
+                                <div class="form-group">
+                                    <select class="form-control" name="mentorId">
+                                        {% for mentor in mentors %}
+                                            {% if user.id !== mentor.id %}
+                                                <option value="{{mentor.id}}">{{mentor.name}}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <button class="btn btn-primary btn-sm">Set as mentor</button>
+                            </form>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+
+<!--
+    <ul class='list-group'>
+      {% for product in products %}
+        <li class='list-group-item'>
+          <p>{{product.name}}</a>
+
+          <form method='POST' action='/categories/{{categoryName}}/products/{{product.id}}?_method=DELETE'>
+            <div class='form-group'>
+              <button class='btn btn-danger'>Delete</button>
+            </div>
+        </form>
+        </li>
+      {% endfor %}
+    </ul>
+
+    <form method='POST' action='/categories/{{categoryName}}?_method=DELETE'>
+        <div class='form-group'>
+          <button class='btn btn-danger'>Delete Category</button>
+        </div>
+    </form>
+</div> -->
+{% endblock %}
