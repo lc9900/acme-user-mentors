@@ -78,15 +78,17 @@ User.removeAward = function(userId, awardId) {
 
     return User.findOne({where: {id: parseInt(userId)}})
                 .then((user) => {
-                    user.removeAward(parseInt(awardId))
+                    return user.removeAward(parseInt(awardId))
+                        .then(() => {
+                            return user;
+                        })
                         .catch((err) => {throw err});
 
-                    return user;
                 }).then((user) => {
                         // If the user award count is below 2
                         // then remove all mentorship
                         utils.inform(`Removing Award for user ${user.name}`);
-                        return Award.findAndCountAll({
+                        return Award.findAll({
                             // where: {
                             //     userId: user.id
                             // },
@@ -99,15 +101,14 @@ User.removeAward = function(userId, awardId) {
                         }).then(result => {
                             // utils.inform(result.count);
                             // utils.inform(result.rows);
+                            result.forEach((award) => {
+                                utils.inform(award.name)
+                            })
 
-                            // It's so weird. I have to access the result.rows.length here
-                            // in order for the result.rows.length to calculated when it
-                            // hits the if condition. Otherwise, sometimes result.rows.length
-                            // does NOT reflect the actual count!
-                            utils.inform(result.rows.length);
-                            if(result.rows.length < 2) {
+                            // utils.inform(result.length);
+                            if(result.length < 2) {
                                 // utils.inform("In the if")
-                                utils.inform(result.rows.length);
+                                utils.inform(result.length);
 
                                 // Now remove all users' mentorId who has this particular user as mentor
                                 return User.findAll().then(() => {
@@ -261,19 +262,27 @@ module.exports = {
 //     throw err;
 // })
 
-// Award.findAndCountAll({
+// Award.findAll({
 //                         // where: {
 //                         //     userId: user.id
 //                         // },
-//                         include: [{
-//                             model: User,
-//                             where: {
-//                                 id: 2
-//                             }
-//                         }]
+//                         // include: [{
+//                         //     model: User,
+//                         //     where: {
+//                         //         id: 2
+//                         //     }
+//                         // }]
 //                     }).then(result => {
 //                         // utils.inform(result.count);
-//                         // utils.inform(result.rows);
+//                         utils.inform(result.rows);
 //                         utils.inform('In test');
-//                         utils.inform(result.rows.length);
+//                         // utils.inform(result.rows.length);
 //                     })
+
+// Award.findAll().then(result => {
+//     result.forEach((award) => {
+//                                 utils.inform(award.name)
+//                             })
+// })
+
+// User.findAll().then()
