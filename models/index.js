@@ -99,7 +99,7 @@ User.removeAward = function(userId, awardId) {
                         }).then(result => {
                             // utils.inform(result.count);
                             // utils.inform(result.rows);
-                            // utils.inform(result.rows.length);
+                            utils.inform(result.rows.length);
                             if(result.rows.length < 2) {
                                 // utils.inform("In the if")
                                 utils.inform(result.rows.length);
