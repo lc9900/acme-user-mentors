@@ -1,5 +1,5 @@
 const Sequelize = require('sequelize');
-const dbUrl = process.env.DATABASEURL || 'postgres://localhost/acmeusermentordb';
+const dbUrl = process.env.DATABASE_URL || 'postgres://localhost/acmeusermentordb';
 const db = new Sequelize(dbUrl);
 const faker = require('faker');
 const utils = require('../utils');
