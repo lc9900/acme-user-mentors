@@ -99,6 +99,11 @@ User.removeAward = function(userId, awardId) {
                         }).then(result => {
                             // utils.inform(result.count);
                             // utils.inform(result.rows);
+
+                            // It's so weird. I have to access the result.rows.length here
+                            // in order for the result.rows.length to calculated when it
+                            // hits the if condition. Otherwise, sometimes result.rows.length
+                            // does NOT reflect the actual count!
                             utils.inform(result.rows.length);
                             if(result.rows.length < 2) {
                                 // utils.inform("In the if")
