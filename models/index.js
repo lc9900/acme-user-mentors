@@ -1,6 +1,6 @@
 const Sequelize = require('sequelize');
 const dbUrl = process.env.DATABASE_URL || 'postgres://localhost/acmeusermentordb';
-const db = new Sequelize(dbUrl);
+const db = new Sequelize(dbUrl, {logging: false});
 const faker = require('faker');
 const utils = require('../utils');
 
@@ -160,42 +160,88 @@ const Award = db.define('award', {
 User.belongsToMany(Award, {through: 'userawardmap'});
 Award.belongsToMany(User, {through: 'userawardmap'})
 
+var user1 = {
+    name: 'Michael Jordan',
+    awards: [{
+        name: faker.company.catchPhrase()
+    }, {
+        name: faker.company.catchPhrase()
+    }]
+};
 
-const syncAndSeed = function(){
-    return db.sync({force: true})
-        .then(() => {
-            utils.inform("Database synced");
-            return Promise.all([
-                                   User.create({name: 'Michael Jordan'}),
-                                   User.create({name: 'Lebron James'}),
-                                   User.create({name: 'Kobe Bryant', mentorId: 1}),
-                                   Award.create({name: faker.company.catchPhrase()}),
-                                   Award.create({name: faker.company.catchPhrase()})
-                               ]).then(() => {
-                                    // Seeding mentor and award
-                                    return Promise.all([User.findOne({
-                                                            where: {
-                                                                name: 'Michael Jordan'
-                                                            }
-                                                        }),
-                                                        Award.findAll()
-                                    ])
-                               }).then((results) => {
-                                    var awards = results[1];
-                                    var user = results[0];
-                                    awards.forEach(function(award){
-                                        award.addUser(user);
-                                    })
-                               }).catch((err) => {
-                                    throw err;
-                               });
-        }).then(() => {
-            utils.inform("Database seeded");
-        }).catch((err) => {
-            throw err;
-        });
-
+var user2 = {
+    name: "Lebron James"
 }
+
+var user3 = {
+    name: "Kobe Bryant",
+    mentorId: 1
+}
+
+// New implementation of syncAndSeed
+const syncAndSeed = function(){
+    utils.inform('syncAndSeed called');
+    return db.sync({force: true})
+            .then(() => {
+                utils.inform('Database synced');
+                return seed();
+            })
+}
+
+const seed = function() {
+   return User.create(user1, {include: [Award]})
+                .then(() => {
+                    return User.create(user2);
+                }).then(() => {
+                    return User.create(user3, {include: [{model: User, as: 'mentor'}]});
+                }).then(() => {
+                    utils.inform('Database seeded');
+                });
+
+   // return Promise.all([
+   //                      User.create(user1, {include: [Award]}),
+   //                      User.create(user2),
+   //                      User.create(user3, {include: [{model: User, as: 'mentor'}]})
+   //                    ]).then(() => {
+   //                        utils.inform('Database seeded');
+   //                    })
+}
+// Older implementation
+// const syncAndSeed = function(){
+//     return db.sync({force: true})
+//         .then(() => {
+//             utils.inform("Database synced");
+//             return Promise.all([
+//                                    User.create({name: 'Michael Jordan'}),
+//                                    User.create({name: 'Lebron James'}),
+//                                    User.create({name: 'Kobe Bryant', mentorId: 1}),
+//                                    Award.create({name: faker.company.catchPhrase()}),
+//                                    Award.create({name: faker.company.catchPhrase()})
+//                                ]).then(() => {
+//                                     // Seeding mentor and award
+//                                     return Promise.all([User.findOne({
+//                                                             where: {
+//                                                                 name: 'Michael Jordan'
+//                                                             }
+//                                                         }),
+//                                                         Award.findAll()
+//                                     ])
+//                                }).then((results) => {
+//                                     var awards = results[1];
+//                                     var user = results[0];
+//                                     awards.forEach(function(award){
+//                                         award.addUser(user);
+//                                     })
+//                                }).catch((err) => {
+//                                     throw err;
+//                                });
+//         }).then(() => {
+//             return utils.inform("Database seeded");
+//         }).catch((err) => {
+//             throw err;
+//         });
+
+// }
 
 module.exports = {
     syncAndSeed,
@@ -216,48 +262,48 @@ module.exports = {
 // console.log(faker.company.catchPhrase())
 
 // syncAndSeed().then(() => {
-    // return User.destroyById(1).then(() => {
-    //     utils.inform("User destroyed")
-    // })
+//     return User.destroyById(1).then(() => {
+//         utils.inform("User destroyed")
+//     })
 
-    // return User.generateAward(1).then(()=> {
-    //     utils.inform("Award generated");
-    // })
+//     return User.generateAward(1).then(()=> {
+//         utils.inform("Award generated");
+//     })
 
-    // return User.removeAward(1, 2).then(()=> {
-    //     utils.inform("Award removed");
-    // })
+//     return User.removeAward(1, 2).then(()=> {
+//         utils.inform("Award removed");
+//     })
 
-    // return User.updateUserFromRequestBody(2, {mentorId: '1'}).then((user)=> {
-    //     return user.getMentor()
-    // }).then((result)=>{
-    //     utils.inform(result.name); // getMentor gets the whole user object.
-    // })
+//     return User.updateUserFromRequestBody(2, {mentorId: '1'}).then((user)=> {
+//         return user.getMentor()
+//     }).then((result)=>{
+//         utils.inform(result.name); // getMentor gets the whole user object.
+//     })
 
-    // return User.updateUserFromRequestBody(3, {mentorId: '1'}).then((user)=> {
-    // })
+//     return User.updateUserFromRequestBody(3, {mentorId: '1'}).then((user)=> {
+//     })
 
-    // return Award.findAndCountAll({
-    //                     include:[{
-    //                         model: User,
-    //                         through: {
-    //                             userId: 1
-    //                         }
-    //                     }]
-    //                 }).then(result => {
-    //                     utils.inform(result.count);
-    //                     utils.inform(result.rows);
-    //                 });
+//     return Award.findAndCountAll({
+//                         include:[{
+//                             model: User,
+//                             through: {
+//                                 userId: 1
+//                             }
+//                         }]
+//                     }).then(result => {
+//                         utils.inform(result.count);
+//                         utils.inform(result.rows);
+//                     });
 
 
 
 
 // }).then(() => {
-    // return User.updateUserFromRequestBody(3, {mentorId: '1'}).then((user)=> {
-    //     return user.getMentor()
-    // }).then((result)=>{
-    //     utils.inform(result.name); // getMentor gets the whole user object.
-    // })
+//     return User.updateUserFromRequestBody(3, {mentorId: '1'}).then((user)=> {
+//         return user.getMentor()
+//     }).then((result)=>{
+//         utils.inform(result.name); // getMentor gets the whole user object.
+//     })
 // }).catch((err) => {
 //     throw err;
 // })

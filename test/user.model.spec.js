@@ -4,30 +4,32 @@ const User = db.models.User;
 const Award = db.models.Award;
 const Sequelize = db.Sequelize;
 
-console.log(typeof User.findUsersViewModel);
-describe('User model', function(done){
-    beforeEach(function(done){
-        db.syncAndSeed().then(() => {
-            done();
-        })
-            // return db.syncAndSeed(); // didn't work
-    });
+// console.log(typeof User.findUsersViewModel);
 
-    describe('User model definition', function(){
-
-        xit('should contain name', function(){});
-    });
-
+describe('User model', function(){
     describe('Class methods', function(){
+        beforeEach(function(){
+            return db.syncAndSeed().then(() => {
+                // done();
+            }).catch(err => {
+                console.log(err);
+                throw err; })
+                // return db.syncAndSeed(); // didn't work
+        });
+
         describe('findUsersViewModel', function(){
             it('should be a class method', function(){
-                console.log(typeof User.findUsersViewModel);
+                // console.log(typeof User.findUsersViewModel);
                 expect(typeof User.findUsersViewModel).to.equal('function');
             });
 
         });
-        describe('Class Method destroyById', function(){
-            it('should delete record by ID', function(done){
+        describe('destroyById', function(){
+            // beforeEach(function(){
+            //     return db.syncAndSeed().catch(err => { console.log(err); })
+            // });
+
+            it('should delete record by ID', function(){
                 User.destroyById(3)
                     .then(() => {
                         return User.findOne({
@@ -37,15 +39,22 @@ describe('User model', function(done){
                         }).then((user) => {
                             // console.log(user.name)
                             expect(user).be.null;
-                            done();
+                            // done();
                         })
                     })
             });
         });
 
-        describe('Class Method generateAward', function(){
-            xit('should generate an award for the user id', function(done){
-                User.generateAward(3)
+        describe('generateAward', function(){
+            // beforeEach(function(){
+            //     return db.syncAndSeed().then(() => {
+            //         // done();
+            //     }).catch(err => { throw err; })
+            //         // return db.syncAndSeed(); // didn't work
+            // });
+
+            it('should generate an award for the user id', function(){
+                return User.generateAward(3)
                     .then(() => {
                         return User.findOne({
                             where: {
@@ -64,18 +73,41 @@ describe('User model', function(done){
                         // res.json got rid of it?
                         // Answer is yes.
                         expect(user.awards.length).to.equal(1);
-                        done();
+                        // done();
                     })
             });
         });
 
-        describe('Class Method removeAward', function(){
+        describe('removeAward', function(){
+            it('should remove an award from user', function(){
+                return User.removeAward(1, 1)
+                            .then(() => {
+                                Award.findAll({
+                                    include:[{
+                                        model: User,
+                                        where: {
+                                            id: 1
+                                        }
+                                    }]
+                                }).then(result => {
+                                    // console.log(result);
+                                    expect(result.length).to.equal(1);
+                                })
+                            })
+            })
 
         })
 
-        describe('Class Method updateUserFromRequestBody', function(){
-            it('should remove mentor if mentor exists', function(done){
-                User.updateUserFromRequestBody(3)
+        describe('updateUserFromRequestBody', function(){
+            // beforeEach(function(){
+            //     return db.syncAndSeed().then(() => {
+            //         // done();
+            //     }).catch(err => { throw err; })
+            //         // return db.syncAndSeed(); // didn't work
+            // });
+
+            it('should remove mentor if mentor exists', function(){
+                return User.updateUserFromRequestBody(3)
                     .then(() => {
                         User.findOne({
                             where: {
@@ -84,13 +116,13 @@ describe('User model', function(done){
                         }).then(user => {
                             // console.log(user.mentorId)
                             expect(user.mentorId).be.null;
-                            done();
+                            // done();
                         })
                     })
             });
 
-            it('should add mentor if mentor does NOT exist', function(done){
-                User.updateUserFromRequestBody(2, {mentorId: 1})
+            it('should add mentor if mentor does NOT exist', function(){
+                return User.updateUserFromRequestBody(2, {mentorId: 1})
                     .then(() => {
                         User.findOne({
                             where: {
@@ -99,7 +131,7 @@ describe('User model', function(done){
                         }).then(user => {
                             // console.log(user.mentorId)
                             expect(user.mentorId).to.equal(1);
-                            done();
+                            // done();
                         })
                     })
             })
